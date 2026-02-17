@@ -1,21 +1,20 @@
 const jwt = require("jsonwebtoken");
 
-const SECRET_KEY = "mysecretkey";
+const SECRET = "mysecretkey";
 
 exports.verifyToken = (req, res, next) => {
-    const authHeader = req.headers.authorization;
+    const token = req.headers["authorization"];
 
-    if (!authHeader) {
-        return res.status(401).json({ message: "Token Required" });
+    if (!token) {
+        return res.status(403).json({ message: "Token Required" });
     }
 
-    const token = authHeader.split(" ")[1];
+    jwt.verify(token, SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: "Invalid Token" });
+        }
 
-    try {
-        const verified = jwt.verify(token, SECRET_KEY);
-        req.user = verified;
+        req.user = decoded;
         next();
-    } catch (err) {
-        res.status(401).json({ message: "Invalid Token" });
-    }
+    });
 };

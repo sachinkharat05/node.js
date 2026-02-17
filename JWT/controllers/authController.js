@@ -1,42 +1,52 @@
-const jwt = require("jsonwebtoken");
 const db = require("../config/db");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
-const SECRET_KEY = "mysecretkey";
+const SECRET = "mysecretkey";
 
-// REGISTER
-exports.register = (req, res) => {
-    const { username, password } = req.body;
+exports.register = async (req, res) => {
+    const { name, email, password } = req.body;
 
-    const sql = "INSERT INTO users (username, password) VALUES (?, ?)";
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    db.query(sql, [username, password], (err, result) => {
-        if (err) return res.status(500).json(err);
+    const sql = "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
+
+    db.query(sql, [name, email, hashedPassword], (err, result) => {
+        if (err) {
+            return res.status(500).json(err);
+        }
 
         res.json({ message: "User Registered Successfully" });
     });
 };
 
-// LOGIN
 exports.login = (req, res) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    const sql = "SELECT * FROM users WHERE username=? AND password=?";
+    const sql = "SELECT * FROM users WHERE email=?";
 
-    db.query(sql, [username, password], (err, results) => {
+    db.query(sql, [email], async (err, result) => {
         if (err) return res.status(500).json(err);
 
-        if (results.length === 0) {
-            return res.status(401).json({ message: "Invalid Credentials" });
+        if (result.length === 0) {
+            return res.status(404).json({ message: "User not found" });
         }
 
-        const user = results[0];
+        const user = result[0];
 
-        const token = jwt.sign(
-            { id: user.id, username: user.username },
-            SECRET_KEY,
-            { expiresIn: "1h" }
-        );
+        const isMatch = await bcrypt.compare(password, user.password);
 
-        res.json({ message: "Login Successful", token });
+        if (!isMatch) {
+            return res.status(400).json({ message: "Wrong Password" });
+        }
+
+        const token = jwt.sign({ id: user.id, email: user.email }, SECRET, {
+            expiresIn: "1h"
+        });
+
+        res.json({
+            message: "Login Success",
+            token
+        });
     });
 };

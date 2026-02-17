@@ -9,7 +9,7 @@ router.post("/login", login);
 
 router.get("/dashboard", verifyToken, (req, res) => {
     res.json({
-        message: "Welcome to Dashboard",
+        message: "Welcome Dashboard",
         user: req.user
     });
 });
