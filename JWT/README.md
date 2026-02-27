@@ -143,4 +143,3 @@ Role-based authentication
 Logout system
 
 Deploy on cloud. 
-and updatr api data server
