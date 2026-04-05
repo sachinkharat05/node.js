@@ -1,0 +1,6 @@
+<<<<<<< HEAD
+Myself Sai Jagdale.
+=======
+Myself Sai Jagdale.
+>>>>>>> 6ac402e7e8b75601b3a66ea90fdd7f0365b55284
+I am BTech student specializing in AI and Analytics.
